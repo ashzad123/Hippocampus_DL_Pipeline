@@ -18,6 +18,7 @@ sys.path.insert(0, str(project_root))
 # from src.dataset import get_train_val_dataloaders
 from src.dataset import get_train_val_dataloaders
 from src.model import UNet3D
+from src.vnet import VNet3D
 from src.metrics import MetricsTracker, dice_coefficient
 
 
@@ -27,11 +28,19 @@ def load_model(checkpoint_path, device):
     config = checkpoint['config']
     
     # Create model
-    model = UNet3D(
-        in_channels=config['in_channels'],
-        num_classes=config['num_classes'],
-        base_channels=config['base_channels']
-    ).to(device)
+    model_type = config.get('model_type', 'unet').lower()
+    if model_type == 'vnet':
+        model = VNet3D(
+            in_channels=config['in_channels'],
+            num_classes=config['num_classes'],
+            base_channels=config['base_channels']
+        ).to(device)
+    else:
+        model = UNet3D(
+            in_channels=config['in_channels'],
+            num_classes=config['num_classes'],
+            base_channels=config['base_channels']
+        ).to(device)
     
     # Load weights
     model.load_state_dict(checkpoint['model_state_dict'])
@@ -311,6 +320,10 @@ def evaluate_pipeline(checkpoint_path, output_dir):
     print("\n📊 Final Results:")
     print(f"  Mean Dice Coefficient: {metrics['dice']['mean_dice']:.4f}")
     print(f"  Mean IoU: {metrics['iou']['mean_iou']:.4f}")
+    if np.isnan(metrics['hausdorff']['mean_hausdorff']):
+        print("  Mean Hausdorff Distance: NaN")
+    else:
+        print(f"  Mean Hausdorff Distance: {metrics['hausdorff']['mean_hausdorff']:.4f}")
 
 
 def main():

@@ -18,6 +18,7 @@ import time
 
 from src.dataset import get_train_val_dataloaders
 from src.model import UNet3D
+from src.vnet import VNet3D
 from src.losses import CombinedLoss
 from src.metrics import MetricsTracker
 
@@ -48,13 +49,22 @@ class Trainer:
         )
         
         # Create model
-        print(f"\nCreating model...")
-        self.model = UNet3D(
-            in_channels=config['in_channels'],
-            num_classes=config['num_classes'],
-            base_channels=config['base_channels']
-        ).to(self.device)
+        model_type = config.get('model_type', 'unet').lower()
+        print(f"\nCreating model ({model_type})...")
+        if model_type == 'vnet':
+            self.model = VNet3D(
+                in_channels=config['in_channels'],
+                num_classes=config['num_classes'],
+                base_channels=config['base_channels']
+            ).to(self.device)
+        else:
+            self.model = UNet3D(
+                in_channels=config['in_channels'],
+                num_classes=config['num_classes'],
+                base_channels=config['base_channels']
+            ).to(self.device)
         
+        print(f"Model in use: {model_type}")
         print(f"Model parameters: {self.model.count_parameters():,}")
         print(f"Training device: {self.device}")
         

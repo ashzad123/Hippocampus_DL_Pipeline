@@ -3,6 +3,7 @@ Evaluation metrics for segmentation
 """
 import torch
 import numpy as np
+from scipy.spatial.distance import directed_hausdorff
 
 
 def dice_coefficient(pred, target, num_classes=3, ignore_background=True):
@@ -79,6 +80,48 @@ def iou_score(pred, target, num_classes=3, ignore_background=True):
     return iou_scores
 
 
+def hausdorff_distance(pred, target, num_classes=3, ignore_background=True):
+    """
+    Calculate symmetric Hausdorff distance for each class
+
+    Args:
+        pred: Predicted segmentation (N, D, H, W) with class indices
+        target: Ground truth segmentation (N, D, H, W) with class indices
+        num_classes: Number of classes
+        ignore_background: If True, don't compute for background (class 0)
+
+    Returns:
+        Dictionary with Hausdorff distances for each class and mean value
+    """
+    hd_scores = {}
+
+    start_class = 1 if ignore_background else 0
+
+    for c in range(start_class, num_classes):
+        pred_c = (pred == c).cpu().numpy()
+        target_c = (target == c).cpu().numpy()
+
+        pred_points = np.argwhere(pred_c)
+        target_points = np.argwhere(target_c)
+
+        if pred_points.size == 0 and target_points.size == 0:
+            hd = 0.0
+        elif pred_points.size == 0 or target_points.size == 0:
+            hd = np.nan
+        else:
+            hd_forward = directed_hausdorff(pred_points, target_points)[0]
+            hd_backward = directed_hausdorff(target_points, pred_points)[0]
+            hd = max(hd_forward, hd_backward)
+
+        hd_scores[f'class_{c}'] = float(hd)
+
+    class_values = [v for k, v in hd_scores.items() if k.startswith('class_')]
+    valid_values = [v for v in class_values if not np.isnan(v)]
+    hd_scores['mean_hausdorff'] = float(np.mean(valid_values)) if valid_values else float('nan')
+
+    return hd_scores
+
+
 class MetricsTracker:
     """
     Track metrics across training/validation
@@ -91,6 +134,7 @@ class MetricsTracker:
         """Reset all metrics"""
         self.dice_scores = []
         self.iou_scores = []
+        self.hausdorff_scores = []
     
     def update(self, predictions, targets):
         """
@@ -106,9 +150,11 @@ class MetricsTracker:
         # Calculate metrics
         dice = dice_coefficient(pred_classes, targets, self.num_classes)
         iou = iou_score(pred_classes, targets, self.num_classes)
+        hausdorff = hausdorff_distance(pred_classes, targets, self.num_classes)
         
         self.dice_scores.append(dice)
         self.iou_scores.append(iou)
+        self.hausdorff_scores.append(hausdorff)
     
     def get_average_metrics(self):
         """
@@ -126,10 +172,21 @@ class MetricsTracker:
         avg_iou = {}
         for key in self.iou_scores[0].keys():
             avg_iou[key] = np.mean([d[key] for d in self.iou_scores])
+
+        # Average Hausdorff scores (ignore NaNs)
+        avg_hd = {}
+        for key in self.hausdorff_scores[0].keys():
+            values = [d[key] for d in self.hausdorff_scores]
+            if key.startswith('class_'):
+                valid_values = [v for v in values if not np.isnan(v)]
+                avg_hd[key] = float(np.mean(valid_values)) if valid_values else float('nan')
+            else:
+                avg_hd[key] = float(np.nanmean(values))
         
         return {
             'dice': avg_dice,
-            'iou': avg_iou
+            'iou': avg_iou,
+            'hausdorff': avg_hd
         }
     
     def print_metrics(self, prefix=""):
@@ -162,6 +219,21 @@ class MetricsTracker:
                 class_num = key.split('_')[1]
                 print(f"{prefix}  Class {class_num}: {value:.4f}")
         print(f"{prefix}  Mean IoU: {iou['mean_iou']:.4f}")
+
+        # Hausdorff scores
+        print(f"\n{prefix}Hausdorff Distance:")
+        hd = metrics['hausdorff']
+        for key, value in hd.items():
+            if key != 'mean_hausdorff':
+                class_num = key.split('_')[1]
+                if np.isnan(value):
+                    print(f"{prefix}  Class {class_num}: NaN")
+                else:
+                    print(f"{prefix}  Class {class_num}: {value:.4f}")
+        if np.isnan(hd['mean_hausdorff']):
+            print(f"{prefix}  Mean Hausdorff: NaN")
+        else:
+            print(f"{prefix}  Mean Hausdorff: {hd['mean_hausdorff']:.4f}")
 
 
 def test_metrics():

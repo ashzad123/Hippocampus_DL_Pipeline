@@ -219,3 +219,5 @@ data/
 results/visualizations/
 results/checkpoints/
 results/logs/
+results/test_predictions/
+results/test_visualizations/
