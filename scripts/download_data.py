@@ -6,6 +6,13 @@ import urllib.request
 import tarfile
 from pathlib import Path
 
+# Download with progress
+def show_progress(block_num, block_size, total_size):
+    downloaded = block_num * block_size
+    percent = min(downloaded * 100.0 / total_size, 100)
+    print(f"\rDownloading: {percent:.1f}% ({downloaded / 1e6:.1f} MB / {total_size / 1e6:.1f} MB)", end="")
+    
+
 def download_dataset(data_dir="data/raw"):
     """
     Download the Hippocampus dataset from Medical Decathlon
@@ -25,11 +32,6 @@ def download_dataset(data_dir="data/raw"):
     print("Size: ~35 MB")
     print()
     
-    # Download with progress
-    def show_progress(block_num, block_size, total_size):
-        downloaded = block_num * block_size
-        percent = min(downloaded * 100.0 / total_size, 100)
-        print(f"\rDownloading: {percent:.1f}% ({downloaded / 1e6:.1f} MB / {total_size / 1e6:.1f} MB)", end="")
     
     try:
         if not os.path.exists(tar_path):
