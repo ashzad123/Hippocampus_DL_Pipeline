@@ -242,16 +242,18 @@ def plot_training_history(checkpoint_path, output_dir):
     print(f"✓ Saved training history plot to {output_path}")
 
 
-def main():
-    """Main evaluation function"""
-    # Configuration
-    checkpoint_path = 'results/checkpoints/best_model.pth'
-    output_dir = 'results/visualizations'
+def evaluate_pipeline(checkpoint_path, output_dir):
+    """
+    Evaluate trained model and generate visualizations
     
+    Args:
+        checkpoint_path: Path to the trained model checkpoint
+        output_dir: Directory to save evaluation results
+    """
     # Check if checkpoint exists
     if not os.path.exists(checkpoint_path):
         print(f"Error: Checkpoint not found at {checkpoint_path}")
-        print("Please train the model first using: python src/train.py")
+        print("Please train the model first")
         return
     
     print("="*70)
@@ -297,6 +299,7 @@ def main():
     # Save metrics to file
     import json
     metrics_path = os.path.join(output_dir, 'evaluation_metrics.json')
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
     with open(metrics_path, 'w') as f:
         json.dump(metrics, f, indent=4)
     
@@ -304,18 +307,20 @@ def main():
     print("Evaluation Complete!")
     print("="*70)
     print(f"Results saved to: {output_dir}")
-    print(f"  - Visualizations: {output_dir}/sample_*.png")
-    print(f"  - Training history: {output_dir}/training_history.png")
-    print(f"  - Metrics: {metrics_path}")
     
     print("\n📊 Final Results:")
     print(f"  Mean Dice Coefficient: {metrics['dice']['mean_dice']:.4f}")
     print(f"  Mean IoU: {metrics['iou']['mean_iou']:.4f}")
-    print(f"  Dice per class:")
-    for key, value in metrics['dice'].items():
-        if key != 'mean_dice':
-            class_num = key.split('_')[1]
-            print(f"    Class {class_num}: {value:.4f}")
+
+
+def main():
+    """Main evaluation function"""
+    # Configuration
+    checkpoint_path = 'results/checkpoints/best_model.pth'
+    output_dir = 'results/visualizations'
+    
+    # Call evaluate_pipeline with default config
+    evaluate_pipeline(checkpoint_path, output_dir)
 
 
 if __name__ == "__main__":
