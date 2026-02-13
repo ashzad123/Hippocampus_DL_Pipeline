@@ -50,7 +50,6 @@ hippocampus-segmentation/
 │           └── dataset.json     # Dataset metadata
 ├── pipeline/
 │   ├── __init__.py
-│   ├── testing_pipeline.py          ← Component testing
 │   ├── train.py                     ← Training pipeline
 │   ├── evaluate.py                  ← Evaluation pipeline 
 ├── src/
