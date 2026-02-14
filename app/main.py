@@ -115,14 +115,27 @@ def _train_job(config: dict):
 def train_page():
     return """
     <html>
-      <head><title>Train Model</title></head>
+            <head>
+                <title>Train Model</title>
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0b1220; color: #e6edf3; padding: 24px; }
+                    .card { max-width: 720px; background: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+                    h2 { margin-top: 0; }
+                    label { display: block; margin: 12px 0 6px; }
+                    input { width: 140px; padding: 8px 10px; border-radius: 10px; border: 1px solid #374151; background: #0f172a; color: #e6edf3; }
+                    button { margin-top: 16px; padding: 10px 16px; border: 0; border-radius: 10px; background: #2563eb; color: #fff; cursor: pointer; }
+                    button:hover { background: #1d4ed8; }
+                </style>
+            </head>
       <body>
-        <h2>Start Training</h2>
-        <form action="/train" method="post">
-          <label>Epochs:</label>
-          <input name="epochs" type="number" value="5" min="1" />
-          <button type="submit">Start Training</button>
-        </form>
+                <div class="card">
+                    <h2>Start Training</h2>
+                    <form action="/train" method="post">
+                        <label>Epochs</label>
+                        <input name="epochs" type="number" value="5" min="1" />
+                        <button type="submit">Start Training</button>
+                    </form>
+                </div>
       </body>
     </html>
     """
@@ -157,13 +170,25 @@ async def train(background_tasks: BackgroundTasks, epochs: int = 5):
 def predict_page():
     return """
     <html>
-      <head><title>Predict</title></head>
+            <head>
+                <title>Predict</title>
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0b1220; color: #e6edf3; padding: 24px; }
+                    .card { max-width: 760px; background: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+                    h2 { margin-top: 0; }
+                    input[type=file] { margin: 12px 0; color: #e6edf3; }
+                    button { margin-top: 8px; padding: 10px 16px; border: 0; border-radius: 10px; background: #16a34a; color: #fff; cursor: pointer; }
+                    button:hover { background: #15803d; }
+                </style>
+            </head>
       <body>
-        <h2>Upload NIfTI (.nii.gz) for Prediction</h2>
-        <form action="/predict" method="post" enctype="multipart/form-data">
-          <input name="file" type="file" accept=".nii,.nii.gz" />
-          <button type="submit">Predict</button>
-        </form>
+                <div class="card">
+                    <h2>Upload NIfTI (.nii.gz) for Prediction</h2>
+                    <form action="/predict" method="post" enctype="multipart/form-data">
+                        <input name="file" type="file" accept=".nii,.nii.gz" />
+                        <button type="submit">Predict</button>
+                    </form>
+                </div>
       </body>
     </html>
     """
@@ -195,17 +220,21 @@ async def predict(file: UploadFile = File(...)):
         <head>
             <title>Prediction Result</title>
             <style>
-                body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; }}
+                body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0b1220; color: #e6edf3; padding: 24px; }}
+                .card {{ max-width: 860px; background: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }}
                 .preview {{ max-width: 720px; }}
-                img {{ width: 100%; height: auto; display: block; border: 1px solid #e5e7eb; border-radius: 8px; }}
+                img {{ width: 100%; height: auto; display: block; border: 1px solid #1f2937; border-radius: 10px; }}
+                a {{ color: #93c5fd; }}
             </style>
         </head>
         <body>
-            <h2>Prediction Result</h2>
-            <div class="preview">
-                <img src="data:image/png;base64,{png_b64}" />
+            <div class="card">
+                <h2>Prediction Result</h2>
+                <div class="preview">
+                    <img src="data:image/png;base64,{png_b64}" />
+                </div>
+                <p><a href="/predict">Try another file</a></p>
             </div>
-            <p><a href="/predict">Try another file</a></p>
         </body>
     </html>
     """
@@ -215,14 +244,25 @@ async def predict(file: UploadFile = File(...)):
 def predict_path_page():
     return """
     <html>
-        <head><title>Predict by Path</title></head>
+        <head>
+            <title>Predict by Path</title>
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0b1220; color: #e6edf3; padding: 24px; }
+                .card { max-width: 860px; background: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+                input { width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid #374151; background: #0f172a; color: #e6edf3; }
+                button { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 10px; background: #a855f7; color: #fff; cursor: pointer; }
+                button:hover { background: #9333ea; }
+            </style>
+        </head>
         <body>
-            <h2>Predict from Local Path</h2>
-            <p>Example: data/raw/Task04_Hippocampus/imagesTs/hippocampus_002.nii.gz</p>
-            <form action="/predict-path" method="post">
-                <input name="file_path" type="text" size="80" />
-                <button type="submit">Predict</button>
-            </form>
+            <div class="card">
+                <h2>Predict from Local Path</h2>
+                <p>Example: data/raw/Task04_Hippocampus/imagesTs/hippocampus_002.nii.gz</p>
+                <form action="/predict-path" method="post">
+                    <input name="file_path" type="text" />
+                    <button type="submit">Predict</button>
+                </form>
+            </div>
         </body>
     </html>
     """
@@ -230,53 +270,57 @@ def predict_path_page():
 
 @app.post("/predict-path", response_class=HTMLResponse)
 async def predict_path(file_path: str = Form(...)):
-        file_path = file_path.strip()
-        if not file_path:
-                raise HTTPException(status_code=400, detail="file_path is required.")
+    file_path = file_path.strip()
+    if not file_path:
+        raise HTTPException(status_code=400, detail="file_path is required.")
 
-        # Restrict to project directory for safety
-        abs_path = os.path.abspath(file_path)
-        project_root = os.path.abspath(PROJECT_ROOT)
-        if not abs_path.startswith(project_root):
-                raise HTTPException(status_code=400, detail="file_path must be inside the project directory.")
+    # Restrict to project directory for safety
+    abs_path = os.path.abspath(file_path)
+    project_root = os.path.abspath(PROJECT_ROOT)
+    if not abs_path.startswith(project_root):
+        raise HTTPException(status_code=400, detail="file_path must be inside the project directory.")
 
-        if not abs_path.endswith((".nii", ".nii.gz")):
-                raise HTTPException(status_code=400, detail="file_path must be a .nii or .nii.gz file.")
+    if not abs_path.endswith((".nii", ".nii.gz")):
+        raise HTTPException(status_code=400, detail="file_path must be a .nii or .nii.gz file.")
 
-        if not os.path.exists(abs_path):
-                raise HTTPException(status_code=404, detail=f"File not found: {abs_path}")
+    if not os.path.exists(abs_path):
+        raise HTTPException(status_code=404, detail=f"File not found: {abs_path}")
 
-        device = _get_device()
-        checkpoint_path = "results/checkpoints/best_model.pth"
+    device = _get_device()
+    checkpoint_path = "results/checkpoints/best_model.pth"
 
-        try:
-                model, config = _load_model(checkpoint_path, device)
-        except FileNotFoundError as exc:
-                raise HTTPException(status_code=404, detail=str(exc))
+    try:
+        model, config = _load_model(checkpoint_path, device)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
 
-        img_nii = nib.load(abs_path)
-        image = img_nii.get_fdata().astype(np.float32)
+    img_nii = nib.load(abs_path)
+    image = img_nii.get_fdata().astype(np.float32)
 
-        image_proc, pred = _predict_volume(model, config, device, image)
-        png_bytes = _render_prediction_png(image_proc, pred)
-        png_b64 = base64.b64encode(png_bytes).decode("utf-8")
+    image_proc, pred = _predict_volume(model, config, device, image)
+    png_bytes = _render_prediction_png(image_proc, pred)
+    png_b64 = base64.b64encode(png_bytes).decode("utf-8")
 
-        return f"""
-        <html>
-            <head>
-                <title>Prediction Result</title>
-                <style>
-                    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; }}
-                    .preview {{ max-width: 720px; }}
-                    img {{ width: 100%; height: auto; display: block; border: 1px solid #e5e7eb; border-radius: 8px; }}
-                </style>
-            </head>
-            <body>
+    return f"""
+    <html>
+        <head>
+            <title>Prediction Result</title>
+            <style>
+                body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0b1220; color: #e6edf3; padding: 24px; }}
+                .card {{ max-width: 860px; background: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }}
+                .preview {{ max-width: 720px; }}
+                img {{ width: 100%; height: auto; display: block; border: 1px solid #1f2937; border-radius: 10px; }}
+                a {{ color: #93c5fd; }}
+            </style>
+        </head>
+        <body>
+            <div class="card">
                 <h2>Prediction Result</h2>
                 <div class="preview">
                     <img src="data:image/png;base64,{png_b64}" />
                 </div>
                 <p><a href="/predict-path">Try another file</a></p>
-            </body>
-        </html>
-        """
+            </div>
+        </body>
+    </html>
+    """
